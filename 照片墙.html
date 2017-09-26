@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css">
+        #list{
+            width: 480px;
+            padding:5px;
+            height: 640px;
+            list-style: none;
+            background: paleturquoise;
+            margin:  20px auto;
+            position: relative;
+        }
+        #list li{
+            width: 150px;
+            height: 150px;
+            background: yellow;
+            float: left;
+            margin: 5px;
+        }
+        #list li img{
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+<ul id="list">
+    <li><img src="img/1.png" alt=""></li>
+    <li><img src="img/2.png" alt=""></li>
+    <li><img src="img/3.png" alt=""></li>
+    <li><img src="img/4.png" alt=""></li>
+    <li><img src="img/5.png" alt=""></li>
+    <li><img src="img/6.png" alt=""></li>
+    <li><img src="img/7.png" alt=""></li>
+    <li><img src="img/8.png" alt=""></li>
+    <li><img src="img/9.png" alt=""></li>
+    <li><img src="img/10.png" alt=""></li>
+    <li><img src="img/11.png" alt=""></li>
+    <li><img src="img/12.png" alt=""></li>
+</ul>
+</body>
+</html>
+<script src="event.js"></script>
+<script src="drag.js"></script>
+<script src="utils.js"></script>
+<script src="tween.js"></script>
+<script>
+    var oUl = document.getElementById("list");
+    var oLis = oUl.getElementsByTagName("li");
+    for(var i = oLis.length-1;i>=0;i--){
+        var oLi = oLis[i];
+        oLi.l = oLi.offsetLeft;
+        oLi.t = oLi.offsetTop;
+        oLi.style.left = oLi.offsetLeft+"px";
+        oLi.style.top = oLi.offsetTop+"px";
+        oLi.style.position = "absolute";
+        oLi.style.margin = 0;
+        var drag  = new Drag(oLi);
+        drag.on("dragdown",increaseIndex);
+        drag.on("dragmove",hited);
+        drag.on("dragup",changePos);
+
+
+    }
+    var index= 0;
+    function increaseIndex(){
+        this.ele.style.zIndex = ++index;
+    }
+    function isHited(a,b){
+        var left = a.offsetLeft> b.offsetLeft+ b.offsetWidth;
+        var top = a.offsetTop> b.offsetTop+ b.offsetHeight;
+        var right = a.offsetLeft+ a.offsetWidth< b.offsetLeft;
+        var bottom = a.offsetTop+ a.offsetHeight< b.offsetTop;
+        if(left||top||right||bottom){
+            return false
+        }else{
+            return true;
+        }
+    }
+    function hited(){
+        this.aHited = [];
+        var a = this.aHited;
+        for(var i = 0;i<oLis.length;i++){
+            var oLi = oLis[i];
+            if(this.ele ==oLi) continue;
+            if(isHited(this.ele,oLi)){
+                this.aHited.push(oLi);
+                oLi.style.backgroundColor = "pink";
+            }else{
+                oLi.style.backgroundColor = "";
+            }
+        }
+    }
+    function changePos(){
+        var a = this.aHited;
+        if(a && a.length>0){
+            for(var i = 0;i< a.length;i++){
+                a[i].distance = Math.pow((this.ele.offsetLeft-a[i].offsetLeft),2)+Math.pow((this.ele.offsetTop-a[i].offsetTop),2)
+            }
+            a.sort(function(a,b){
+                return a.distance - b.distance;
+            });
+            var short = a[0];
+            short.style.backgroundColor = "green";
+            animate(this.ele,{left:short.l,top:short.t},600,2);
+            animate(short,{left:this.ele.l,top:this.ele.t},600,2,function(){
+                for(var i = 0;i< a.length;i++){
+                    a[i].style.backgroundColor = "";
+                }
+            });
+            var temp = {l:this.ele.l,t:this.ele.t};
+            this.ele.l = short.l;
+            this.ele.t = short.t;
+            short.l = temp.l;
+            short.t = temp.t;
+            this.aHited = [];
+        }else{
+
+            goBack.call(this);
+        }
+    }
+    function goBack(){
+        animate(this.ele,{left:this.ele.l,top:this.ele.t},600,2);
+    }
+
+</script>
